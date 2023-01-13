@@ -2,7 +2,7 @@
 
 # GCP vars
 PROJECT_ID="smart-envoy-270916"
-SERVICE_ACCOUNT="projects/$PROJECT_ID/serviceAccounts/952063690068@cloudbuild.gserviceaccount.com"
+SERVICE_ACCOUNT="my-service-account@smart-envoy-270916.iam.gserviceaccount.com"
 REGION="global"
 
 # GitHub vars
@@ -23,4 +23,4 @@ gcloud beta builds triggers create github \
   --branch-pattern=$BRANCH_PATTERN \
   --build-config=$BUILD_CONFIG_FILE \
   --include-logs-with-status \
-  --service-account=$SERVICE_ACCOUNT
+  --service-account="projects/$PROJECT_ID/serviceAccounts/$SERVICE_ACCOUNT"
