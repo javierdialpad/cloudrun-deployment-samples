@@ -1,0 +1,21 @@
+steps:
+  - id: 'docker build'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '$_IMAGE', '.']
+
+  - id: 'docker push'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '$_IMAGE']
+
+  - id: 'gcloud deploy'
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args: ['run', 'deploy', 'cloudbuild-test',
+           '--image', '$_IMAGE',
+           '--region', 'us-east1']
+
+substitutions:
+  _IMAGE: gcr.io/${PROJECT_ID}/${REPO_NAME}:${SHORT_SHA}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
