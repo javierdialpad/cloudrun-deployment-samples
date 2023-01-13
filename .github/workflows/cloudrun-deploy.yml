@@ -1,12 +1,12 @@
 name: Deploy to Cloud Run
 on: [push]
 defaults:
-      run:
-        shell: bash
+  run:
+    shell: bash
 
 permissions:
-      contents: 'read'
-      id-token: 'write'
+  contents: 'read'
+  id-token: 'write'
 
 env:
   IMAGE: us-central1-docker.pkg.dev/smart-envoy-270916/my-docker-repo/helloworld
@@ -24,8 +24,8 @@ jobs:
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v1'
         with:
-            workload_identity_provider: $WIF_POOL
-            service_account: $SERVICE_ACCOUNT
+            workload_identity_provider: ${{ env.WIF_POOL }}
+            service_account: ${{ env.SERVICE_ACCOUNT }}
 
       - id: 'build'
         run: |
@@ -39,4 +39,4 @@ jobs:
         uses: 'google-github-actions/deploy-cloudrun@v1'
         with:
           service: 'cloudrun-gha'
-          image: ${{ steps.build.BUILT_IMAGE }}
+          image: ${{ steps.build.outputs.BUILT_IMAGE }}
