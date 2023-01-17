@@ -1,0 +1,29 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+ name: helloworld-app-pipeline
+description: helloworld application pipeline
+serialPipeline:
+ stages:
+ - targetId: cloudrun-dev-target
+   profiles: [dev]
+ - targetId: cloudrun-prod-target
+   profiles: [prod]
+---
+
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+ name: cloudrun-dev-target
+description: Cloud Run development service
+run:
+ location: projects/smart-envoy-270916/locations/us-central1
+---
+
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+ name: cloudrun-prod-target
+description: Cloud Run production service
+run:
+ location: projects/smart-envoy-270916/locations/us-central1

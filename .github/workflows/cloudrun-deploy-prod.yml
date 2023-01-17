@@ -1,9 +1,9 @@
-name: Cloud Deploy
+name: Cloud Deploy (prod)
 
 on:
   push:
-    branches:
-      - '**'
+    tags:
+      - v1.**
 
 defaults:
   run:
@@ -17,13 +17,12 @@ env:
   PROJECT_ID: smart-envoy-270916
   REGION: us-central1
   DELIVERY_PIPELINE: helloworld-app-pipeline
-  IMAGE_NAME: helloworld-app-image
-  IMAGE: us-central1-docker.pkg.dev/smart-envoy-270916/my-docker-repo/helloworld
+  PROD_TARGET: cloudrun-prod-target
   SERVICE_ACCOUNT: my-service-account@smart-envoy-270916.iam.gserviceaccount.com
   WIF_POOL: projects/952063690068/locations/global/workloadIdentityPools/wif-pool/providers/gh-provider
 
 jobs:
-  build:
+  release-prod:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
@@ -36,20 +35,13 @@ jobs:
             workload_identity_provider: ${{ env.WIF_POOL }}
             service_account: ${{ env.SERVICE_ACCOUNT }}
 
-      - id: 'build'
+      - id: 'promote'
+        name: 'Promote dev release to prod'
         run: |
-          echo yes | gcloud auth configure-docker us-central1-docker.pkg.dev
-          TAGGED_IMAGE=$IMAGE:$(git rev-parse --short HEAD)
-          docker build -t $TAGGED_IMAGE .
-          docker push $TAGGED_IMAGE
-          echo "BUILT_IMAGE=$TAGGED_IMAGE" >> $GITHUB_OUTPUT
-
-      - id: 'create-release'
-        name: 'Create dev release'
-        run: |
-          gcloud deploy releases create release-$(git rev-parse --short HEAD) \
+          echo "Deploying $(git describe --tags --abbrev=0)"
+          gcloud deploy releases promote \
+            --release=release-$(git rev-parse --short HEAD) \
+            --delivery-pipeline=$DELIVERY_PIPELINE \
             --project=$PROJECT_ID \
             --region=$REGION \
-            --delivery-pipeline=$DELIVERY_PIPELINE \
-            --images="$IMAGE_NAME=${{ steps.build.outputs.BUILT_IMAGE }}"\
-            --skaffold-file=./clouddeploy/skaffold.yaml
+            --to-target=$PROD_TARGET
